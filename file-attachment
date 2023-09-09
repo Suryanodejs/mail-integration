@@ -1,0 +1,119 @@
+public function add_applied_job(){
+
+    // print_r($_POST);exit;
+
+      $_FILES['file_s']['name'] = $_FILES['resume']['name'];
+      $_FILES['file_s']['type'] = $_FILES['resume']['type'];
+      $_FILES['file_s']['tmp_name'] = $_FILES['resume']['tmp_name'];
+      $_FILES['file_s']['error'] = $_FILES['resume']['error'];
+      $_FILES['file_s']['size'] = $_FILES['resume']['size'];
+  
+      $target_dir = base_url().'assets/resume_image/';
+      $config['upload_path'] =   'assets/resume_image/';
+     
+      if (!is_dir($config['upload_path'])) {
+          mkdir($config['upload_path'], 0777, TRUE);
+      }
+      $config['allowed_types'] = 'jpg|jpeg|png|gif|pdf';
+      $config['max_size'] = 10000000;
+      $config['file_name'] = $_FILES['resume']['name'];
+  
+     
+      $this->load->library('upload', $config);
+      $this->upload->initialize($config);
+    
+      if ($this->upload->do_upload('file_s')) {
+          $uploadData = $this->upload->data();
+          $resume = $target_dir.$uploadData['file_name'];
+         
+      } else {
+          $resume = '';
+          $error = array('error' => $this->upload->display_errors());
+      }
+     $job_type =   $this->input->post('job_post_id');
+     
+               $name =    $this->input->post('name');
+                $phone =   $this->input->post('contact');
+              $email =      $this->input->post('email');
+              $message   =   $this->input->post('message');
+                   
+      $data = array(
+
+        'name'=>$name,
+        'contact'=> $phone,
+        'email'=> $email,
+        'message'=>$this->input->post('message'),
+        'job_post_id'=>$this->input->post('job_post_id'),
+        'resume'=>$resume,
+
+      );
+   
+     $this->db->insert('applied_job_tbl',$data);
+      
+      
+$this->load->library('email');
+
+$sent = " Name:".$name."
+Email: ".$email."
+Phone:".$phone."" ;
+
+//echo $sent; exit();
+
+     $config = Array(
+                    	'protocol'  => 'smtp',
+                    	'smtp_host' => 'mail.hirage.in',
+                    	'smtp_port' =>  587,
+                        // 'smtp_user' => '', // change it to yours
+                        // 'smtp_pass' => '', // change it to yours
+                        'smtp_user' => 'no_@', // change it to yours
+                        'smtp_pass' => 'no_@111111', // change it to yours
+                        'mailtype'  => 'html',
+                        'charset'   => 'iso-8859-1',
+                        'wordwrap'  => TRUE
+                    );
+                    
+                    $this->load->library('email', $config);
+            		$this->email->set_newline("\r\n");
+                    $this->email->from($config['smtp_user']);
+                    $this->email->to('01suryamishra@gmail.com');
+                    $this->email->subject('New Report');
+                 
+                    $this->email->message("$sent"); 
+                    $this->email->attach($resume);
+                  
+            
+                    if($this->email->send()){
+                        
+                      echo"sucee"; 
+ 
+                      $this->session->set_flashdata('msg','Mail Send Successfully!');
+                      
+                   }
+                    else{
+                    show_error($this->email->print_debugger());
+                  //  exit();
+                    }
+      
+ 
+      
+
+      
+      
+      
+      
+      
+      //  echo $this->db->last_query();
+   // exit();
+  
+      if($job_type = 1){
+      $this->session->set_flashdata('msg',"Application Sent Successfully!!");
+      redirect(base_url().'sss');
+      }elseif($job_type == 2){
+
+        $this->session->set_flashdata('msg',"Application Sent Successfully!!");
+        redirect(base_url().'ssshh');
+
+      }
+      
+
+    }
